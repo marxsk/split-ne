@@ -27,10 +27,13 @@ refngr = manatee.NGram(refcorp.get_conf('PATH') + '/word.ngr')
 
 ## end of initialization
 
-if len(sys.argv) != 2:
+if not len(sys.argv) in [2, 3, 4]:
 	print u"You have to enter token sequence to check in quotes"
 	print u"\te.g. \"New York Rangers Jaromír Jágr\""
+	print u"\tthe 2nd argument is first correct n-gram e.g. \"New York Rangers\""
 	sys.exit(1)
+
+##print "#test#sequence bi_dice ngram_dice bi_mi ngram_mi diff4 diff1"
 
 tokens = sys.argv[1].decode("utf-8").split(" ")
 
@@ -80,13 +83,13 @@ for i in range(len(tokens)-1):
 	print "NEG-1: %i" % (real1_neg + real2_neg)
 	print
 
-	if low_remove > (pos1_neg + pos2_neg):
-		low_remove = pos1_neg + pos2_neg
-		low_remove_idx = i
-
-	if low_remove4 > (pos1 + pos2 - pos1_neg - pos2_neg):
-		low_remove4 = (pos1 + pos2 - pos1_neg - pos2_neg)
+	if low_remove4 > (pos1_neg + pos2_neg):
+		low_remove4 = pos1_neg + pos2_neg
 		low_remove4_idx = i
+
+	if low_remove > (pos1 + pos2 - pos1_neg - pos2_neg):
+		low_remove = (pos1 + pos2 - pos1_neg - pos2_neg)
+		low_remove_idx = i
 
 	### logDice
 	if (pos1 + pos2 == 0) or ((2.0 * sequence_count / (pos1 + pos2)) == 0):
@@ -157,5 +160,11 @@ print "MAX ngram dice: %s %s" % (tokens[0:high_ngram_dice_idx+1], tokens[high_ng
 print "MIN bigram MI: %s %s" % (tokens[0:low_bigram_mi_idx+1], tokens[low_bigram_mi_idx+1:])
 print "MAX ngram MI: %s %s" % (tokens[0:high_ngram_mi_idx+1], tokens[high_ngram_mi_idx+1:])
 
-print "DIFF4 ngram-remove: %s %s" % (tokens[0:low_remove_idx+1], tokens[low_remove_idx+1:])
-print "DIFF1 ngram-remove: %s %s" % (tokens[0:low_remove4_idx+1], tokens[low_remove4_idx+1:])
+print "DIFF4 ngram-remove: %s %s" % (tokens[0:low_remove4_idx+1], tokens[low_remove4_idx+1:])
+print "DIFF1 ngram-remove: %s %s" % (tokens[0:low_remove_idx+1], tokens[low_remove_idx+1:])
+
+## test output against data (sys.argv[2])
+tokens_ngram1_test = sys.argv[2].decode("utf-8").split(" ")
+count = len(tokens_ngram1_test) - 1 # we want last index that is inside
+
+print u"#test# '%s' %d %d %d %d %d %d" % (sys.argv[1].decode("utf-8"), int(count == low_bigram_dice_idx), int(count == high_ngram_dice_idx), int(count == low_bigram_mi_idx), int(count == high_ngram_mi_idx), int(count == low_remove4_idx), int (count == low_remove_idx))
